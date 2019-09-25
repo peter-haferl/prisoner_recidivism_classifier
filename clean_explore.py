@@ -39,6 +39,13 @@ variable_categories = {'key': ['case_id'],
                                          'total_max_sentence_indicator']}
 
 
+def create_dummy_list(data):
+    to_dummy = []
+    for x in variable_categories['categorical']:
+        if x in list(data.columns):
+            to_dummy.append(x)
+    return to_dummy
+
 
 def replace_missing(x):
     """replaces dictionary-described missing values with nans"""
@@ -54,10 +61,10 @@ def replace_missing(x):
     if len(str(x)) == 4 and x in [88.8, 99.5, 99.8, 8888, 9995, 9998, 9999]:
         return np.nan
 
-    if len(str(x)) == 5 and x in [888.8, 999.5, 999.8, 9999.9, 88888, 99995, 99998, 99999]:
+    if len(str(x)) == 5 and x in [888.8, 999.5, 999.8, 88888, 99995, 99998, 99999]:
         return np.nan
 
-    if len(str(x)) == 6 and x in [8888.8, 9999.5, 9999.8]:
+    if len(str(x)) == 6 and x in [8888.8, 9999.5, 9999.8, 9999.9]:
         return np.nan
 
     else:
@@ -65,8 +72,13 @@ def replace_missing(x):
 
 
 def replace_life(x):
-    if len(str(x)) == 5 and x in [9999.3, 9999.4, 9999.6, 99993, 99994, 99996]:
-        return 29*12
+    Average_life_sentence = 29*12
+    if x in [99993, 99994, 99996]:
+        return Average_life_sentence
+    elif x in [9999.3, 9999.4, 9999.6]:
+        return Average_life_sentence
+    else:
+        return x
 
 
 def make_singular_variable_list(data):
@@ -117,10 +129,9 @@ def full_clean(data):
     data = data.dropna()
     data_clean = clean_target(data)
     # create dummy categoricals
-    descriptive_columns = list(variable_names.values())
-    descriptive_columns.append('outcome')
-    data_clean.columns = descriptive_columns
-    data_clean = pd.get_dummies(data_clean, columns=variable_categories['categorical'],
+    data_clean.rename(index=str, columns=variable_names)
+    to_dummy = create_dummy_list(data_clean)
+    data_clean = pd.get_dummies(data_clean, columns=to_dummy,
                                 drop_first=True)
     # drop race and gender columns
     data_clean.drop(columns=['race_2.0', 'race_3.0', 'race_4.0', 'race_6.0', 'sex_2.0'], inplace=True)
