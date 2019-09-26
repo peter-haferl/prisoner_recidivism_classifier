@@ -118,9 +118,10 @@ def clean_target(data):
     data_clean.drop(columns=['V96', 'V97', 'V98', 'V99'], inplace=True)
     return data_clean
 
-def full_clean(data):
+def full_clean():
     """cleans and transforms raw data to clean"""
     # drop absent/single value columns and values
+    data = pd.read_csv('./data/da26521-0003.tsv', sep='\t', header=0, low_memory=False)
     data = data.applymap(lambda x: replace_missing(x)).copy()
     absent_columns = list_of_absent_data_columns(data)
     data.drop(columns=absent_columns, inplace=True)
@@ -129,12 +130,29 @@ def full_clean(data):
     data = data.dropna()
     data_clean = clean_target(data)
     # create dummy categoricals
-    data_clean.rename(index=str, columns=variable_names)
+    data_clean.rename(index=str, columns=variable_names, inplace=True)
     to_dummy = create_dummy_list(data_clean)
     data_clean = pd.get_dummies(data_clean, columns=to_dummy,
                                 drop_first=True)
     # drop race and gender columns
-    data_clean.drop(columns=['race_2.0', 'race_3.0', 'race_4.0', 'race_6.0', 'sex_2.0'], inplace=True)
+    data_clean.drop(columns=['race_2.0', 'race_3.0', 'race_4.0', 'race_6.0',
+                             'case_id', 'time_served_parole', 'age_parole_release', 'sex_2.0'], inplace=True)
     # convert life sentences to average life sentence (348 months)
     data_clean = data_clean.applymap(lambda x: replace_life(x)).copy()
     return data_clean
+
+def get_gender_race():
+    """cleans and transforms raw data to clean"""
+    # drop absent/single value columns and values
+    data = pd.read_csv('./data/da26521-0003.tsv', sep='\t', header=0, low_memory=False)
+    data = data.applymap(lambda x: replace_missing(x)).copy()
+    absent_columns = list_of_absent_data_columns(data)
+    data.drop(columns=absent_columns, inplace=True)
+    singular_variables = make_singular_variable_list(data)
+    data.drop(columns=singular_variables, inplace=True)
+    data = data.dropna()
+    data_clean = clean_target(data)
+    # create dummy categoricals
+    data_clean.rename(index=str, columns=variable_names, inplace=True)
+    gender_race = data_clean[['sex', 'race']]
+    return gender_race
