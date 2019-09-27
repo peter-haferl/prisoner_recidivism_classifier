@@ -1,10 +1,12 @@
-'''Graphs bias of False Positives/Negatives based on Gender and Race'''
+#!/usr/bin/env python
+# coding: utf-8
+
+# In[2]:
+
 
 import matplotlib.pyplot as plt
 import pandas as pd
 from clean_explore import get_gender_race
-
-gender_race = get_gender_race()
 
 def plot_bias(set_type=None, pos_values=None, neg_values=None, size=None):
     '''
@@ -24,7 +26,8 @@ def plot_bias(set_type=None, pos_values=None, neg_values=None, size=None):
     
     fig, ax = plt.subplots(2,1, figsize=size)
     
-    font = {'weight' : 'bold',
+    font = {'family' : 'normal',
+            'weight' : 'bold',
             'size'   : 18}
     
     plt.rc('font', **font)
