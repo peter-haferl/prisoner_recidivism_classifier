@@ -72,6 +72,19 @@ state_codes = {
     58: 'CYA'
 }
 
+gender_codes = {
+    1: 'male',
+    2: 'female'
+}
+
+race_codes = {
+    1: 'White',
+    2: 'Black',
+    3: 'American Indian',
+    4: 'Asian',
+    6: 'Other'
+}
+
 offense_codes = {
     'murder': 12,
     'homicide': 14,
@@ -156,6 +169,16 @@ offense_codes = {
     'federal - tax law': 850,
     'federal - racketeering': 860
 }
+
+
+describe_list = ['custody_agency_1_2.0', 'custody_agency_1_3.0',
+                 'custody_agency_1_4.0', 'custody_agency_1_6.0',
+                 'custody_agency_1_7.0', 'custody_agency_1_12.0',
+                 'release_type_2.0', 'release_type_3.0',
+                 'release_type_4.0', 'release_supervision_status_2.0',
+                 'release_supervision_status_3.0',
+                 'release_supervision_status_4.0',
+                 'number_of_offenses_indicator_2']
 
 
 def offense_bin(series):
@@ -282,8 +305,14 @@ def full_clean():
     data_clean = data_clean.loc[data_clean.total_max_sentence_length < 99999]
     data_clean['first_offense_type'] = offense_bin(data_clean.offense_1)
     data_clean['longest_offense_type'] = offense_bin(data_clean.offense_longest_sentence)
+    data_clean['gender'] = data_clean['sex']
+    data_clean['ethnicity'] = data_clean['race']
+    data_clean = data_clean.replace({"gender": gender_codes})
+    data_clean = data_clean.replace({"ethnicity": race_codes})
     #     print(data_clean.describe(include='all').T)
-    to_dummy = create_dummy_list(data_clean)
+    #     to_dummy = create_dummy_list(data_clean)
+    to_dummy = ['gender', 'ethnicity', 'custody_agency_1', 'release_type', 'release_supervision_status',
+                'state', 'offense_longest_sentence']
     data_clean2 = pd.get_dummies(data_clean, columns=to_dummy,
                                  drop_first=True)
     data_clean2['state'] = data_clean['state']
@@ -291,10 +320,14 @@ def full_clean():
     data_clean2['first_offense_type'] = data_clean['first_offense_type']
     data_clean2['longest_offense_type'] = data_clean['longest_offense_type']
     data_clean2['offense_longest_sentence'] = data_clean['offense_longest_sentence']
+    #     data_clean2['sex'] = data_clean['sex']
+    #     data_clean2['race'] = data_clean['race']
+    data_clean2['gender'] = data_clean['gender']
+    data_clean2['ethnicity'] = data_clean['ethnicity']
     #     print(list(data_clean2.columns))
     # drop race and gender columns
-    data_clean2.drop(columns=['race_2.0', 'race_3.0', 'race_4.0', 'race_6.0',
-                              'case_id', 'time_served_parole', 'age_parole_release', 'sex_2.0'], inplace=True)
+    data_clean2.drop(columns=['ethnicity_Black', 'ethnicity_White', 'ethnicity_Asian', 'ethnicity_Other',
+                              'case_id', 'time_served_parole', 'age_parole_release', 'gender_male'], inplace=True)
     # convert life sentences to average life sentence (348 months)
     data_clean2 = data_clean2.applymap(lambda x: replace_life(x)).copy()
     convert = ['birth_year', 'admission_year', 'year_prison_release']
@@ -304,10 +337,12 @@ def full_clean():
 
 
 def get_gender_race():
-    """cleans and transforms raw data to clean"""
+    """cleans and creates race and gender variables"""
     # drop absent/single value columns and values
     data = pd.read_csv('./data/da26521-0003.tsv', sep='\t', header=0, low_memory=False)
     data = data.applymap(lambda x: replace_missing(x)).copy()
+    data = data.loc[data['V33'] < 99999]
+    data = data.loc[data['V34'] < 99999]
     absent_columns = list_of_absent_data_columns(data)
     data.drop(columns=absent_columns, inplace=True)
     singular_variables = make_singular_variable_list(data)

@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from clean_explore import get_gender_race
 
-def plot_bias(set_type=None, pos_values=None, neg_values=None, size=None):
+def plot_bias(figname, set_type=None, pos_values=None, neg_values=None, size=None):
     '''
     Product bar plot percentages of false postives/negative 
     
@@ -40,7 +40,7 @@ def plot_bias(set_type=None, pos_values=None, neg_values=None, size=None):
     ax[1].set_ylabel('Percentage False Negative', fontdict=font)
     
     plt.subplots_adjust(hspace = 0.25)
-    
+    plt.savefig(figname, transparent=True)
     return fig
 
 
@@ -52,7 +52,7 @@ def analyze_bias(y_test, y_test_pred):
     y_test_pred = Array readout of sklearn model .predit() method 
     '''
     # Get race
-    'gender_race = get_gender_race_info()'
+    gender_race = get_gender_race()
     
     # Merge predict data with test data and racial information
     preds = pd.concat([y_test, pd.Series(y_test_pred, name='pred', index=y_test.index)], axis=1, ignore_index=False)
@@ -71,7 +71,7 @@ def analyze_bias(y_test, y_test_pred):
     gender_neg_values = [men_false_neg,women_false_neg]
     
     
-    plot_bias(set_type='gender', pos_values=gender_pos_values, neg_values=gender_neg_values, size=(10,10))
+    plot_bias('gender_bias.png', set_type='gender', pos_values=gender_pos_values, neg_values=gender_neg_values, size=(10,10))
     
     # Race Bias
     
@@ -92,5 +92,5 @@ def analyze_bias(y_test, y_test_pred):
     race_pos_values = [white_false_pos, black_false_pos, americanindian_false_pos, asian_false_pos, other_false_pos]
     race_neg_values = [white_false_neg, black_false_neg, americanindian_false_neg, asian_false_neg, other_false_neg]
     
-    plot_bias(set_type='race', pos_values=race_pos_values, neg_values=race_neg_values, size=(12,10))
+    plot_bias('race_bias.png', set_type='race', pos_values=race_pos_values, neg_values=race_neg_values, size=(12,10))
 

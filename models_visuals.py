@@ -7,7 +7,6 @@ from sklearn.model_selection import train_test_split
 from yellowbrick.classifier import ConfusionMatrix
 
 
-
 def split_data(data, target):
     """splits data"""
     X = data.drop(columns=target)
@@ -44,6 +43,7 @@ def roc_visual(best_model, X_train, X_test, y_test):
     # plot the roc curve for the model
     plt.plot(fpr, tpr, marker='.')
     # show the plot
+    plt.savefig('roc.png', transparent=True)
     plt.show()
 
 
@@ -57,7 +57,8 @@ def nice_confusion(model, X_train, X_test, y_train, y_test):
         cmap='PuBu', fontsize=18)
     viz.fit(X_train, y_train)
     viz.score(X_test, y_test)
-    viz.poof()
+    viz.show()
+    # viz.poof()
 
 
 def baseline_logistic(X_train, X_test, y_train, y_test):
